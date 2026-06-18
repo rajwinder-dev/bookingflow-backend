@@ -16,6 +16,7 @@ import { devMode } from "./config/appConfig";
 import cookieParser from "cookie-parser";
 import path from "path";
 import { devMiddleware } from "./core/middleware/devMiddleware";
+import authRouter from "./modules/auth/auth.route";
 
 export const app = express();
 
@@ -55,7 +56,7 @@ app.get("/", (_req, res) => {
   res.status(200).json({ status: "success" });
 });
 app.use("/uploads", express.static(path.join(__dirname, '../uploads')))
-
+app.use("/api/v1/auth", authRouter);
 app.all(/(.*)/, (req, res, next) => {
   next(new appError(`Can't find ${req.originalUrl} on this server!`, 404, "INVALID_ROUTE"));
 });

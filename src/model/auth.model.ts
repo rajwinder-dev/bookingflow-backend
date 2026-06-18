@@ -4,10 +4,9 @@ interface AuthType extends Document {
   email: string;
   passwordHash: string;
   passwordChangeAt: Date;
-  role: string;
+  role: "user" | "admin";
 }
 const authSchema = new mongoose.Schema<AuthType>({
-  _id: mongoose.Schema.Types.ObjectId,
   email: {
     type: String,
     required: true,
@@ -18,7 +17,6 @@ const authSchema = new mongoose.Schema<AuthType>({
   },
   passwordChangeAt: {
     type: Date,
-    required: true,
   },
   role: {
     type: String,

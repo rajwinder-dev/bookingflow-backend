@@ -19,7 +19,7 @@ export default class AuthService {
         409,
         "CONFLICT_ERROR",
       );
-    const data = await Auth.create({ email, passwordHash });
+    const data = await Auth.create({ email, passwordHash, role: "user" });
 
     return data;
   }
