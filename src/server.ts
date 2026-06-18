@@ -2,9 +2,18 @@ import http from "http";
 import { AddressInfo } from "net";
 import { app } from "./app";
 import { devMode } from "./config/appConfig";
+import mongoose from "mongoose";
+import { env } from "./config/env";
 
-const port = Number(process.env.PORT) || 4000;
+const port = Number(env.port);
 export const server = http.createServer(app);
+
+async function main() {
+  await mongoose.connect(env.mongoUri);
+  console.log("Connected to MongoDB");
+}
+
+main().catch((err) => console.log(err));
 
 if (process.env.NODE_ENV !== "test")
   server.listen(port, () => {
