@@ -8,7 +8,10 @@ Content-Type: application/json
   "password": "password",
   "confirmPassword": "password"
 }
-
+> {%
+    client.global.set("accessToken", response.body.data.accessToken)
+    client.global.set("cookies", response.headers["set-cookie"])
+%}
 ### login
 POST {{baseURL}}/auth/login
 Content-Type: application/json
@@ -18,5 +21,91 @@ Content-Type: application/json
   "password": "password"
 }
 
+> {% 
+client.global.set("accessToken", response.body.data.accessToken)
+    client.global.set("cookies", response.headers["set-cookie"])
+%}
+
 ### logout
 POST {{baseURL}}/auth/logout
+
+### auth details
+GET {{baseURL}}/auth/me
+Authorization: Bearer {{accessToken}}
+
+### refresh token
+POST {{baseURL}}/auth/refresh
+Cookie: {{cookies}}
+
+### forget password
+@email = john@example.com
+POST {{baseURL}}/auth/forget-password/{{email}}
+Content-Type: application/json
+
+
+### reset password
+@token = token 
+POST {{baseURL}}/auth/reset-password{{token}
+Content-Type: application/json
+
+### change password
+POST {{baseURL}}/auth/change-password
+Content-Type: application/json
+
+{
+  "currnetPassword": "password",
+  "password": "password",
+  "confirmPassword": "password"
+}
+
+//  events 
+
+### get events
+GET {{baseURL}}/event
+
+### create event
+POST {{baseURL}}/event
+Content-Type: application/json
+
+{
+  "name": "party 2 ",
+  "venue":  "city hall",
+  "totalSeats": 24,
+  "date": "2022-01-01T00:00:00.000Z",
+}
+
+### get event detils
+@eventId = 6a34e1628d11e4f766b37cdc
+GET {{baseURL}}/event/{{eventId}}
+
+
+
+### update event
+@eventId = 6a34e1628d11e4f766b37cdc
+PATCH {{baseURL}}/event/{{eventId}}
+Content-Type: application/json
+
+{
+  "name": "event",
+  "date": "2022-01-01T00:00:00.000Z",
+  "venue":  "venue name",
+}
+
+
+// reservation
+
+### create booking
+@seatId = 6a34e1628d11e4f766b37cdd
+POST {{baseURL}}/booking/{{seatId}}
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+### confirm booking
+@seatId = 6a34e1628d11e4f766b37cdd
+PATCH  {{baseURL}}/booking/{{seatId}}/confirm
+Authorization: Bearer {{accessToken}}
+
+### cancle booking
+@seatId = 6a34e1628d11e4f766b37cdd
+PATCH  {{baseURL}}/booking/{{seatId}}/cancel
+Authorization: Bearer {{accessToken}}

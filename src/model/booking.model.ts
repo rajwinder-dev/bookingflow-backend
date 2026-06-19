@@ -1,69 +1,67 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
-
-export interface IEvent {
-  name: string;
-  timeStamp: Date;
-  venus: string; // Fixed typo from 'venus' to 'venue' if intended, kept 'venus' to match original
-  totalSeats: number;
-}
-
-export interface IEventDocument extends IEvent, Document {}
-
-const eventSchema = new Schema<IEventDocument>({
-  name: { type: String, required: true },
-  timeStamp: { type: Date, required: true },
-  venus: { type: String, required: true },
-  totalSeats: { type: Number, required: true },
-});
-
-export const Event = mongoose.model<IEventDocument>("Event", eventSchema);
+import { schemaCleanOptions } from "../core/helper/mongooseCleaner";
 
 export type SeatStatus = "AVAILABLE" | "BOOKED" | "RESERVED";
 
-export interface ISeat {
+interface ISeat extends Document {
   eventId: Types.ObjectId;
   seatNumber: number;
   status: SeatStatus;
 }
 
-export interface ISeatDocument extends ISeat, Document {}
-
-const seatSchema = new Schema<ISeatDocument>({
-  eventId: { type: Schema.Types.ObjectId, ref: "Event", required: true },
-  seatNumber: { type: Number, required: true },
-  status: {
-    type: String,
-    enum: ["AVAILABLE", "BOOKED", "RESERVED"],
-    required: true,
-    default: "AVAILABLE",
+const seatSchema = new Schema<ISeat>(
+  {
+    eventId: { type: Schema.Types.ObjectId, ref: "Event", required: true },
+    seatNumber: { type: Number, required: true },
+    status: {
+      type: String,
+      enum: ["AVAILABLE", "BOOKED", "RESERVED"],
+      required: true,
+      default: "AVAILABLE",
+    },
   },
-});
+  schemaCleanOptions,
+);
 
-export const Seat = mongoose.model<ISeatDocument>("Seat", seatSchema);
-
-
+export const Seat = mongoose.model<ISeat>("Seat", seatSchema);
 
 export type ReservationStatus = "PENDING" | "CONFIRMED" | "CANCELLED";
 
-export interface IReservation {
+interface IReservation extends Document {
   eventId: Types.ObjectId;
   userId: Types.ObjectId;
   seatId: Types.ObjectId;
+  createdAt: Date;
+  expiresAt: Date;
   status: ReservationStatus;
 }
 
-export interface IReservationDocument extends IReservation, Document {}
+const reservationSchema = new Schema<IReservation>(
+  {
+    eventId: { type: Schema.Types.ObjectId, ref: "Event", required: true },
+    userId: { type: Schema.Types.ObjectId, ref: "Auth", required: true },
+    seatId: { type: Schema.Types.ObjectId, ref: "Seat", required: true },
 
-const reservationSchema = new Schema<IReservationDocument>({
-  eventId: { type: Schema.Types.ObjectId, ref: "Event", required: true },
-  userId: { type: Schema.Types.ObjectId, ref: "Auth", required: true },
-  seatId: { type: Schema.Types.ObjectId, ref: "Seat", required: true },
-  status: {
-    type: String,
-    enum: ["PENDING", "CONFIRMED", "CANCELLED"],
-    required: true,
-    default: "PENDING",
+    createdAt: { type: Date, default: Date.now },
+
+    expiresAt: {
+      type: Date,
+      default: () => new Date(Date.now() + 10 * 60 * 1000),
+    },
+
+    status: {
+      type: String,
+      enum: ["PENDING", "CONFIRMED", "CANCELLED"],
+      default: "PENDING",
+    },
   },
-});
-
-export const Reservation = mongoose.model<IReservationDocument>("Reservation", reservationSchema);
+  schemaCleanOptions,
+);
+reservationSchema.index(
+  { expiresAt: 1 },
+  { partialFilterExpression: { status: "PENDING" } },
+);
+export const Reservation = mongoose.model<IReservation>(
+  "Reservation",
+  reservationSchema,
+);

@@ -12,8 +12,7 @@ export class authMiddleware {
       return next(new appError("No token found, please Login to get access", 401, "INVALID_TOKEN"));
     const decoded = JwtService.verify(token, "access");
     if (!decoded) return next(new appError("Invalid or Expire token", 401, "INVALID_TOKEN"));
-
-    const userdata = await Auth.findOne({ id: decoded.userId });
+    const userdata = await Auth.findOne({ _id: decoded.userId });
     if (!userdata) return next(new appError("User not found", 401, "NOT_FOUND"));
 
     if (userdata?.passwordChangeAt) {
@@ -27,9 +26,14 @@ export class authMiddleware {
     }
     req.user = {
       ...req.user,
-      id: userdata?.id,
+      id: userdata.id,
+      role: userdata.role,
     };
 
+    next();
+  });
+  static restrictedRole = (role: "admin" | "user") => catchAsync(async (req, _res, next) => {
+    if (req.user.role !== role) return next(new appError("You are not authorized", 403, "UNAUTHORIZED"));
     next();
   });
 }

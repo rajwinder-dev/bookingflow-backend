@@ -21,7 +21,7 @@ export default class AuthService {
       );
     const data = await Auth.create({ email, passwordHash, role: "user" });
 
-    return data;
+    return data.toJSON();
   }
   static async loginUser({ email, password }: LoginInput) {
     const userData = await Auth.findOne({ email });
@@ -79,8 +79,9 @@ export default class AuthService {
     return data;
   }
   static async getAuthDetails(userId: string) {
-    const userData = await Auth.findOne({ id: userId });
-    return userData;
+    const userData = await Auth.findOne({ _id: userId }, { passwordHash: 0 });
+    
+    return userData?.toJSON();
   }
   static async forgetPassword(email: string) {
     const user = await Auth.findOne({ email });

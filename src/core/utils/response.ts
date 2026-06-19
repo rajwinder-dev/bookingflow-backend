@@ -13,7 +13,7 @@ import { Response } from "express";
 
 export function response(
   res: Response,
-  data: object | null,
+  data: object | null | undefined,
   statusCode: number = 200,
   options: { otherFields?: object; hideFields?: string[] } = {}
 ) {

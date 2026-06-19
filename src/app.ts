@@ -8,18 +8,18 @@ import cors from "cors";
 
 import { appError } from "./core/utils/appError";
 import { globalHandler } from "./core/utils/globalHandler";
-
+import "./corn-job";
 
 import { devMode } from "./config/appConfig";
-
 
 import cookieParser from "cookie-parser";
 import path from "path";
 import { devMiddleware } from "./core/middleware/devMiddleware";
 import authRouter from "./modules/auth/auth.route";
+import eventRouter from "./modules/event/event.router";
+import bookingRouter from "./modules/booking/booking.routes";
 
 export const app = express();
-
 
 dotenv.config({ path: "./.env" });
 
@@ -41,7 +41,7 @@ app.use(
     origin: "http://localhost:5173",
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     credentials: true,
-  })
+  }),
 );
 
 app.use(express.json({ limit: "10kb" }));
@@ -55,12 +55,22 @@ if (devMode) app.use(devMiddleware);
 app.get("/", (_req, res) => {
   res.status(200).json({ status: "success" });
 });
-app.use("/uploads", express.static(path.join(__dirname, '../uploads')))
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+
 app.use("/api/v1/auth", authRouter);
-app.all(/(.*)/, (req, res, next) => {
-  next(new appError(`Can't find ${req.originalUrl} on this server!`, 404, "INVALID_ROUTE"));
+app.use("/api/v1/event", eventRouter);
+app.use("/api/v1/booking", bookingRouter);
+
+app.all(/(.*)/, (req, _res, next) => {
+  next(
+    new appError(
+      `Can't find ${req.originalUrl} on this server!`,
+      404,
+      "INVALID_ROUTE",
+    ),
+  );
 });
 
 app.use(globalHandler);
 
-export default app
+export default app;

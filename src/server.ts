@@ -1,9 +1,10 @@
+import mongoose from "mongoose";
 import http from "http";
 import { AddressInfo } from "net";
 import { app } from "./app";
 import { devMode } from "./config/appConfig";
-import mongoose from "mongoose";
 import { env } from "./config/env";
+
 
 const port = Number(env.port);
 export const server = http.createServer(app);
