@@ -68,9 +68,9 @@ POST {{baseURL}}/event
 Content-Type: application/json
 
 {
-  "name": "hell test  ",
-  "venue":  "city hall 34",
-  "totalSeats": 32,
+  "name": "local event",
+  "venue":  "madol town",
+  "totalSeats": 34,
   "date": "2022-01-01T00:00:00.000Z",
 }
 

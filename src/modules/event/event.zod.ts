@@ -4,6 +4,7 @@ export const createEventSchema = { bodySchema: z.object({
   name: z.string(),
   venue: z.string(),
   date: z.coerce.date(),
+  pricePerSeat: z.number(),
   totalSeats: z.number(),
 })};
 

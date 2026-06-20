@@ -1,5 +1,5 @@
 import cron from "node-cron";
-import { Seat } from "./model/booking.model";
+import { Seat } from "./model/reservation.model";
 
 cron.schedule("* * * * *", async () => {
   const now = new Date();

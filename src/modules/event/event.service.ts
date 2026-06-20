@@ -1,4 +1,4 @@
-import { Seat } from "../../model/booking.model";
+import { Seat } from "../../model/reservation.model";
 import { Event } from "../../model/event.model";
 import { CreateEventInput } from "./event.zod";
 

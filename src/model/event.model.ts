@@ -7,6 +7,7 @@ interface IEvent extends Document {
   venue: string;
   totalSeats: number;
   createdAt: Date;
+  pricePerSeat: number;
 }
 
 
@@ -17,6 +18,7 @@ const eventSchema = new Schema<IEvent>(
     venue: { type: String, required: true },
     totalSeats: { type: Number, required: true },
     createdAt: { type: Date, default: Date.now },
+    pricePerSeat: { type: Number, required: true },
   },
   schemaCleanOptions,
 );

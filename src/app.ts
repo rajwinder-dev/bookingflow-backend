@@ -20,7 +20,7 @@ import path from "path";
 import { devMiddleware } from "./core/middleware/devMiddleware";
 import authRouter from "./modules/auth/auth.route";
 import eventRouter from "./modules/event/event.router";
-import bookingRouter from "./modules/booking/booking.routes";
+import reservationRouter from "./modules/reservation/reservation.routes";
 
 export const app = express();
 
@@ -62,7 +62,7 @@ app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/event", eventRouter);
-app.use("/api/v1/booking", bookingRouter);
+app.use("/api/v1/reservation", reservationRouter);
 
 app.all(/(.*)/, (req, _res, next) => {
   next(

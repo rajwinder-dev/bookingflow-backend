@@ -1,7 +1,7 @@
 import { appError } from "../../core/utils/appError";
-import { Reservation, Seat } from "../../model/booking.model";
+import { Reservation, Seat } from "../../model/reservation.model";
 import mongoose from "mongoose";
-export class bookingService {
+export class reservationService {
   static createReservation = async ({
     seatIds,
     userId,
