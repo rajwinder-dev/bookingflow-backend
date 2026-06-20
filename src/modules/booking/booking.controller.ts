@@ -19,9 +19,10 @@ export class BookingController {
     response(res, data, 200);
   });
   static confirmReservation = catchAsync(async (req, res, _next) => {
+    const { eventId } = req.params as { eventId: string };
     const data = await bookingService.confirmReservation({
       userId: req.user.id,
-      eventId: req.params.eventId,
+      eventId,
     });
     response(res, data, 200);
   });

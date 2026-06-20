@@ -20,8 +20,8 @@ export function validationMiddleware({
             "Body validation failed",
             400,
             "VALIDATION_ERROR",
-            formatZodErrors(result.error)
-          )
+            formatZodErrors(result.error),
+          ),
         );
       req.body = result.data;
     }
@@ -34,10 +34,10 @@ export function validationMiddleware({
             "Params validation failed",
             400,
             "VALIDATION_ERROR",
-            formatZodErrors(result.error)
-          )
+            formatZodErrors(result.error),
+          ),
         );
-      req.params = result.data;
+      req.params = result.data as Record<string, string>;
     }
 
     if (querySchema) {
@@ -48,10 +48,10 @@ export function validationMiddleware({
             "Query validation failed",
             400,
             "VALIDATION_ERROR",
-            formatZodErrors(result.error)
-          )
+            formatZodErrors(result.error),
+          ),
         );
-        req.query = result.data;
+      req.query = result.data as Record<string, string>;
     }
 
     next();
