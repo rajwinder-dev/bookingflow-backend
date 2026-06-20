@@ -7,12 +7,19 @@ interface ISeat extends Document {
   eventId: Types.ObjectId;
   seatNumber: number;
   status: SeatStatus;
+  reservedBy: Types.ObjectId | null;
+  expiresAt: Date;
 }
 
 const seatSchema = new Schema<ISeat>(
   {
     eventId: { type: Schema.Types.ObjectId, ref: "Event", required: true },
     seatNumber: { type: Number, required: true },
+    reservedBy: { type: Schema.Types.ObjectId, ref: "Auth" },
+    expiresAt: {
+      type: Date,
+      default: () => new Date(Date.now() + 1 * 60 * 1000),
+    },
     status: {
       type: String,
       enum: ["AVAILABLE", "BOOKED", "RESERVED"],
@@ -32,28 +39,22 @@ interface IReservation extends Document {
   userId: Types.ObjectId;
   seatId: Types.ObjectId;
   createdAt: Date;
-  expiresAt: Date;
+  paymentId: string;
   status: ReservationStatus;
+  cost: number;
 }
 
 const reservationSchema = new Schema<IReservation>(
   {
     eventId: { type: Schema.Types.ObjectId, ref: "Event", required: true },
     userId: { type: Schema.Types.ObjectId, ref: "Auth", required: true },
-    seatId: { type: Schema.Types.ObjectId, ref: "Seat", required: true },
-
     createdAt: { type: Date, default: Date.now },
-
-    expiresAt: {
-      type: Date,
-      default: () => new Date(Date.now() + 10 * 60 * 1000),
-    },
-
     status: {
       type: String,
       enum: ["PENDING", "CONFIRMED", "CANCELLED"],
       default: "PENDING",
     },
+    paymentId: { type: String },
   },
   schemaCleanOptions,
 );

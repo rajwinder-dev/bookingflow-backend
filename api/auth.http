@@ -68,9 +68,9 @@ POST {{baseURL}}/event
 Content-Type: application/json
 
 {
-  "name": "party 2 ",
-  "venue":  "city hall",
-  "totalSeats": 24,
+  "name": "hell test  ",
+  "venue":  "city hall 34",
+  "totalSeats": 32,
   "date": "2022-01-01T00:00:00.000Z",
 }
 

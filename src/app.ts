@@ -1,3 +1,6 @@
+import mongoose from "mongoose";
+mongoose.set("strict", "throw");
+
 import express from "express";
 import dotenv from "dotenv";
 import morgan from "morgan";
