@@ -1,12 +1,13 @@
 import z from "zod";
 
-export const createBookingSchema = {
+export const createReservationSchema = {
   bodySchema: z.object({
-    eventId: z.string(),
+    seatIds: z.array(z.string()),
   }),
   paramsSchema: z.object({
-    seatId: z.string(),
+    eventId: z.string(),
   }),
 };
-
-export type CreateBookingInput = z.infer<typeof createBookingSchema.bodySchema>;
+export type CreateReservationInput = z.infer<
+  typeof createReservationSchema.bodySchema
+>;

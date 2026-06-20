@@ -2,36 +2,43 @@ import { appError } from "../../core/utils/appError";
 import { Reservation, Seat } from "../../model/booking.model";
 import mongoose from "mongoose";
 export class bookingService {
-  static getMyReservationDetails = async ({
-    userId,
-    seatId,
-  }: {
-    userId: string;
-    seatId: string;
-  }) => {
-    const data = await Reservation.findOne({ userId, seatId });
-    return data?.toJSON();
-  };
   static createReservation = async ({
-    seatId,
+    seatIds,
     userId,
   }: {
     userId: string;
-    seatId: string;
+    seatIds: string[];
   }) => {
-    const seat = await Seat.findOne({ _id: seatId });
-    if (!seat) throw new appError("Seat does not exist", 404, "NOT_FOUND");
-    if (seat.status !== "AVAILABLE")
-      throw new appError("Seat is not available", 400, "BAD_REQUEST");
+    let seats;
     const session = await mongoose.startSession();
-    session.startTransaction();
+    const availableSeats = await Seat.find({
+      _id: { $in: seatIds },
+      status: "AVAILABLE",
+    }).session(session);
+
+    if (availableSeats.length !== seatIds.length) {
+      throw new appError("Some seats are not available", 409, "BAD_REQUEST");
+    }
     try {
-      await Seat.updateOne({ _id: seatId }, { status: "RESERVED" });
-      Reservation.create({
-        eventId: seat.eventId,
-        userId,
-        seatId,
-      });
+      session.startTransaction();
+
+      seats = await Seat.updateMany(
+        {
+          _id: { $in: seatIds },
+          status: "AVAILABLE",
+        },
+        {
+          $set: {
+            status: "RESERVED",
+            reservedBy: userId,
+            expiresAt: new Date(Date.now() + 60 * 1000),
+          },
+        },
+        {
+          session,
+        },
+      );
+
       await session.commitTransaction();
     } catch (error) {
       await session.abortTransaction();
@@ -39,86 +46,75 @@ export class bookingService {
     } finally {
       await session.endSession();
     }
+    return seats;
   };
-  static conformReservation = async ({
-    seatId,
+  static getReserverdSeats = async ({ userId }: { userId: string }) => {
+    const reservedSeats = await Seat.find({
+      reservedBy: userId,
+      status: "RESERVED",
+    });
+    return reservedSeats.map((seat) => seat.toJSON());
+  };
+  static confirmReservation = async ({
     userId,
+    eventId,
   }: {
-    seatId: string;
     userId: string;
+    eventId: string;
   }) => {
     const session = await mongoose.startSession();
+
     try {
       session.startTransaction();
 
-      const updateResult = await Reservation.updateOne(
-        { seatId, status: "PENDING", userId },
-        { $set: { status: "CONFIRMED" } },
-        { session },
-      );
-
-      if (!updateResult.modifiedCount) {
-        throw new appError("Invalid or already processed reservation", 400);
-      }
-
-      await Seat.updateOne(
-        { _id: seatId },
-        { $set: { status: "BOOKED" } },
-        { session },
-      );
-
-      await session.commitTransaction();
-    } catch (error) {
-      await session.abortTransaction();
-      throw error;
-    } finally {
-      session.endSession();
-    }
-    return { userId, seatId };
-  };
-  static cancelReservation = async ({
-    seatId,
-    userId,
-  }: {
-    seatId: string;
-    userId: string;
-  }) => {
-    const session = await mongoose.startSession();
-    try {
-      session.startTransaction();
-
-      const result = await Reservation.updateOne(
+      const seats = await Seat.find(
         {
-          seatId,
-          userId,
-          status: { $in: ["PENDING", "CONFIRMED"] },
+          reservedBy: userId,
+          eventId,
+          status: "RESERVED",
         },
-        { $set: { status: "CANCELLED" } },
+        null,
         { session },
       );
 
-      if (!result.modifiedCount) {
-        throw new appError(
-          "Reservation does not exist or already processed",
-          404,
-          "NOT_FOUND",
-        );
+      if (!seats.length) {
+        throw new appError("No reserved seats found", 404, "NOT_FOUND");
       }
 
-      // 3. Free the seat (only if reservation cancelled)
-      await Seat.updateOne(
-        { _id: seatId },
-        { $set: { status: "AVAILABLE" } },
+      const seatIds = seats.map((seat) => seat._id);
+
+      const paymentId = `PAY-${Date.now()}`;
+
+      const reservation = new Reservation({
+        userId,
+        eventId,
+        seatIds,
+        paymentId,
+        status: "CONFIRMED",
+      });
+
+      await reservation.save({ session });
+
+      await Seat.updateMany(
+        {
+          _id: { $in: seatIds },
+        },
+        {
+          $set: {
+            status: "BOOKED",
+          },
+        },
         { session },
       );
 
       await session.commitTransaction();
-      return { seatId, userId };
+
+      return reservation.toJSON();
     } catch (error) {
       await session.abortTransaction();
       throw error;
     } finally {
-      session.endSession();
+      await session.endSession();
     }
   };
 }
